@@ -41,19 +41,10 @@ class CreditCardExtention extends AbstractTypeExtension
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
-        $builder->addEventListener(FormEvents::POST_SET_DATA, function (FormEvent $event) {
-            /** @var Order $data */
-            $data = $event->getData();
-            $form = $event->getForm();
-
-            // 支払い方法が一致する場合
-            if ($data->getPayment()->getMethodClass() === CreditCard::class) {
-                $form->add('sample_payment_token', HiddenType::class, [
-                    'required' => false,
-                    'mapped' => true, // Orderエンティティに追加したカラムなので、mappedはtrue
-                ]);
-            }
-        });
+        $builder->add('sample_payment_token', HiddenType::class, [
+            'required' => false,
+            'mapped' => true, // Orderエンティティに追加したカラムなので、mappedはtrue
+        ]);
 
         $builder->addEventListener(FormEvents::PRE_SUBMIT, function (FormEvent $event) {
             $options = $event->getForm()->getConfig()->getOptions();
@@ -69,18 +60,6 @@ class CreditCardExtention extends AbstractTypeExtension
                 $Order->getPayment()->getId();
 
                 return;
-            } else {
-
-                $Payment = $this->paymentRepository->findOneBy(['method_class' => CreditCard::class]);
-
-                $data = $event->getData();
-                $form = $event->getForm();
-
-                // 支払い方法が一致しなければremove
-                if ($Payment->getId() != $data['Payment']) {
-                    $form->remove('sample_payment_token');
-                }
-
             }
         });
     }
